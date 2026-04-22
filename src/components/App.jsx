@@ -199,7 +199,7 @@ function App() {
   return (
     <div className="App">
       <header className="header">
-        <h1>💼 Departmental Expense Wallet System</h1>
+        <h1> Departmental Expense Wallet System</h1>
         <p>Concurrent Transaction Handling with Database-Level Locking</p>
         <button 
           className="scenario-toggle"
@@ -211,7 +211,7 @@ function App() {
 
       {showScenario && (
         <div className="scenario-box">
-          <h2>🎯 Business Scenario</h2>
+          <h2> Business Scenario</h2>
           <div className="scenario-content">
             <p className="scenario-intro">
               A mid-sized enterprise with <strong>4 business units (BUs)</strong>, each having a dedicated expense wallet (₹50,000 initial balance). 
@@ -220,7 +220,7 @@ function App() {
             </p>
             
             <div className="challenge-section">
-              <h3>⚡ The Challenge</h3>
+              <h3> The Challenge</h3>
               <p>Handle simultaneous requests without data loss or double-spending using the same logic for both scenarios:</p>
             </div>
             
@@ -267,23 +267,11 @@ function App() {
           <div className="content">
             <div className="wallet-card">
               <h2>{selectedDept.name} Department</h2>
-              
-              <div className="users-info">
-                <div className="user-badge">👤 User1</div>
-                <div className="user-badge">👤 User2</div>
-                <div className="user-badge">👤 User3</div>
-                <span className="users-label">3 Active Users with Admin Rights</span>
-              </div>
-
-              <div className="balance-display">
-                <span className="label">Current Wallet Balance</span>
-                <span className="amount">₹{parseFloat(selectedDept.balance).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-              </div>
 
               {testResults && (
                 <div className="test-results">
                   <div className="test-results-header">
-                    <h3>📊 Test Results</h3>
+                    <h3> Test Results</h3>
                     <button onClick={clearTestResults} className="clear-results-btn" title="Clear test results">
                       ✕
                     </button>
@@ -291,7 +279,7 @@ function App() {
                   <div className="results-grid">
                     <div className="result-item">
                       <span className="result-label">Test Type:</span>
-                      <span className="result-value">{testResults.testType === 'valid' ? '✅ High-Volume Valid Case' : '⚠️ Edge Case'}</span>
+                      <span className="result-value">{testResults.testType === 'valid' ? ' High-Volume Valid Case' : '⚠️ Edge Case'}</span>
                     </div>
                     <div className="result-item">
                       <span className="result-label">Total Requests:</span>
@@ -322,29 +310,26 @@ function App() {
                       <span className="result-value">{testResults.duration}ms</span>
                     </div>
                     <div className={`result-status ${testResults.endBalance === testResults.expectedBalance ? 'pass' : 'fail'}`}>
-                      {testResults.endBalance === testResults.expectedBalance ? '✅ TEST PASSED' : '❌ TEST FAILED'}
+                      {testResults.endBalance === testResults.expectedBalance ? ' TEST PASSED' : ' TEST FAILED'}
                     </div>
                   </div>
                 </div>
               )}
 
               <div className="actions">
-                <h3>🧪 Concurrent Payment Tests</h3>
+                <h3> Concurrent Payment Tests</h3>
                 
                 {processingRequests > 0 && (
                   <div className="processing-indicator">
-                    <div className="processing-animation">
-                      <span className="loading-spinner"></span>
-                      <span className="processing-text">
-                        Processing {processingRequests} concurrent requests simultaneously...
-                      </span>
+                    <div className="processing-header-compact">
+                      <div className="spinner-icon"></div>
+                      <div className="processing-text-compact">
+                        <strong>Processing {processingRequests} Concurrent Requests</strong>
+                        <span>Simulating simultaneous transactions</span>
+                      </div>
                     </div>
-                    <div className="concurrent-requests">
-                      {Array.from({ length: processingRequests }, (_, i) => (
-                        <div key={i} className="request-dot" style={{ animationDelay: `${i * 0.1}s` }}>
-                          💳
-                        </div>
-                      ))}
+                    <div className="progress-bar-wrapper">
+                      <div className="progress-bar-animated"></div>
                     </div>
                   </div>
                 )}
@@ -386,7 +371,7 @@ function App() {
 
                 <div className="divider"></div>
 
-                <h3>💳 Single Payment</h3>
+                <h3> Single Payment</h3>
                 <div className="action-row">
                   <button onClick={() => processPayment(500, 'Vendor Invoice', 'User1')} className="single-payment-btn">
                     User1: Pay ₹500
@@ -401,7 +386,7 @@ function App() {
 
                 <div className="divider"></div>
 
-                <h3>🔄 Reset Balance</h3>
+                <h3> Reset Balance</h3>
                 <div className="action-row">
                   <button onClick={() => { resetBalance(50000); clearTestResults(); }} className="reset-btn">
                     Reset to ₹50,000
@@ -418,7 +403,7 @@ function App() {
                   className="clear-transactions-btn"
                   title="Clear all transactions"
                 >
-                  🗑️ Clear Ledger
+                   Clear Ledger
                 </button>
               </div>
               <div className="ledger-stats">
