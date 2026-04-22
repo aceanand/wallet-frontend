@@ -22,7 +22,8 @@ function App() {
 
   const fetchDepartments = async () => {
     try {
-      const response = await fetch('/api/departments');
+      const apiUrl = process.env.REACT_APP_API_URL || '';
+      const response = await fetch(`${apiUrl}/api/departments`);
       const data = await response.json();
       setDepartments(data);
       if (data.length > 0 && !selectedDept) {
@@ -35,7 +36,8 @@ function App() {
 
   const fetchTransactions = async (deptId) => {
     try {
-      const response = await fetch(`/api/departments/${deptId}/transactions`);
+      const apiUrl = process.env.REACT_APP_API_URL || '';
+      const response = await fetch(`${apiUrl}/api/departments/${deptId}/transactions`);
       const data = await response.json();
       setTransactions(data);
     } catch (error) {
@@ -45,7 +47,8 @@ function App() {
 
   const processPayment = async (amount, description, userName) => {
     try {
-      const response = await fetch(`/api/departments/${selectedDept.id}/pay`, {
+      const apiUrl = process.env.REACT_APP_API_URL || '';
+      const response = await fetch(`${apiUrl}/api/departments/${selectedDept.id}/pay`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount, description, userName })
@@ -87,7 +90,8 @@ function App() {
         userNum = (i % 3) + 1;
       }
       
-      return fetch(`/api/departments/${selectedDept.id}/pay`, {
+      const apiUrl = process.env.REACT_APP_API_URL || '';
+      return fetch(`${apiUrl}/api/departments/${selectedDept.id}/pay`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -110,7 +114,8 @@ function App() {
       await fetchTransactions(selectedDept.id);
       
       // Get updated balance
-      const deptResponse = await fetch('/api/departments');
+      const apiUrl = process.env.REACT_APP_API_URL || '';
+      const deptResponse = await fetch(`${apiUrl}/api/departments`);
       const depts = await deptResponse.json();
       const updatedDept = depts.find(d => d.id === selectedDept.id);
       const endBalance = parseFloat(updatedDept.balance);
@@ -138,7 +143,8 @@ function App() {
 
   const resetBalance = async (balance) => {
     try {
-      await fetch(`/api/departments/${selectedDept.id}/reset`, {
+      const apiUrl = process.env.REACT_APP_API_URL || '';
+      await fetch(`${apiUrl}/api/departments/${selectedDept.id}/reset`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ balance })
@@ -160,7 +166,8 @@ function App() {
     }
     
     try {
-      await fetch(`/api/departments/${selectedDept.id}/transactions`, {
+      const apiUrl = process.env.REACT_APP_API_URL || '';
+      await fetch(`${apiUrl}/api/departments/${selectedDept.id}/transactions`, {
         method: 'DELETE'
       });
       setTransactions([]);
