@@ -8,8 +8,8 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [testResults, setTestResults] = useState(null);
   const [showScenario, setShowScenario] = useState(false);
-  const [customRequests, setCustomRequests] = useState(10);
-  const [customAmount, setCustomAmount] = useState(500);
+  const [loadingTest, setLoadingTest] = useState(null); // Track which test is loading
+  const [processingRequests, setProcessingRequests] = useState(0); // Track concurrent requests
 
   useEffect(() => {
     fetchDepartments();
@@ -28,7 +28,14 @@ function App() {
       const response = await fetch(`${apiUrl}/api/departments`);
       const data = await response.json();
       setDepartments(data);
-      if (data.length > 0 && !selectedDept) {
+      
+      // Update selectedDept with fresh data if it exists
+      if (selectedDept) {
+        const updatedSelectedDept = data.find(d => d.id === selectedDept.id);
+        if (updatedSelectedDept) {
+          setSelectedDept(updatedSelectedDept);
+        }
+      } else if (data.length > 0) {
         setSelectedDept(data[0]);
       }
     } catch (error) {
@@ -73,10 +80,17 @@ function App() {
   };
 
   const simulateConcurrentPayments = async (count, amount, testType) => {
-    setLoading(true);
+    setLoadingTest(testType); // Set which test is loading
     setTestResults(null);
+    setProcessingRequests(count); // Show how many requests are being processed
     
-    const startBalance = parseFloat(selectedDept.balance);
+    // Fetch current balance first to ensure we have the latest value
+    const apiUrl = process.env.REACT_APP_API_URL || '';
+    const deptResponseBefore = await fetch(`${apiUrl}/api/departments`);
+    const deptsBefore = await deptResponseBefore.json();
+    const currentDept = deptsBefore.find(d => d.id === selectedDept.id);
+    const startBalance = parseFloat(currentDept.balance);
+    
     const startTime = Date.now();
     
     // Simulate multiple users making payments simultaneously
@@ -92,7 +106,6 @@ function App() {
         userNum = (i % 3) + 1;
       }
       
-      const apiUrl = process.env.REACT_APP_API_URL || '';
       return fetch(`${apiUrl}/api/departments/${selectedDept.id}/pay`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -122,6 +135,9 @@ function App() {
       const updatedDept = depts.find(d => d.id === selectedDept.id);
       const endBalance = parseFloat(updatedDept.balance);
       
+      // Calculate expected balance based on successful payments
+      const expectedBalance = startBalance - (successful * amount);
+      
       setTestResults({
         testType,
         startBalance,
@@ -131,15 +147,15 @@ function App() {
         totalRequests: count,
         amount,
         duration,
-        expectedBalance: testType === 'valid' ? startBalance - (count * amount) : 
-                        testType === 'edge' ? startBalance - amount : startBalance
+        expectedBalance
       });
       
     } catch (error) {
       alert('Concurrent test error');
       console.error(error);
     } finally {
-      setLoading(false);
+      setLoadingTest(null); // Clear loading state
+      setProcessingRequests(0); // Clear processing count
     }
   };
 
@@ -195,30 +211,39 @@ function App() {
 
       {showScenario && (
         <div className="scenario-box">
-          <h2>🎯 The Challenge</h2>
+          <h2>🎯 Business Scenario</h2>
           <div className="scenario-content">
-            <div className="scenario-section">
-              <h3>📋 Scenario</h3>
-              <p>A mid-sized enterprise with <strong>4 departments</strong>, each having:</p>
-              <ul>
-                <li>Dedicated expense wallet (₹50,000 initial balance)</li>
-                <li><strong>3 active users</strong> with admin rights</li>
-                <li>End-of-month rush: Multiple users paying invoices <strong>simultaneously</strong></li>
-              </ul>
+            <p className="scenario-intro">
+              A mid-sized enterprise with <strong>4 business units (BUs)</strong>, each having a dedicated expense wallet (₹50,000 initial balance). 
+              Each department has <strong>3 active users</strong> with administrative rights to pay vendor invoices. 
+              At month-end, users are rapidly clearing multiple invoices simultaneously.
+            </p>
+            
+            <div className="challenge-section">
+              <h3>⚡ The Challenge</h3>
+              <p>Handle simultaneous requests without data loss or double-spending using the same logic for both scenarios:</p>
             </div>
             
-            <div className="scenario-section">
-              <h3>✅ Test Case 1: High-Volume Valid Case</h3>
-              <p><strong>Setup:</strong> Wallet has ₹50,000</p>
-              <p><strong>Action:</strong> User1, User2, and User3 submit 10 payments of ₹500 each at the <strong>exact same millisecond</strong></p>
-              <p><strong>Expected:</strong> All 10 succeed → Final balance: ₹45,000</p>
-            </div>
-            
-            <div className="scenario-section">
-              <h3>⚠️ Test Case 2: Edge Case (Insufficient Funds)</h3>
-              <p><strong>Setup:</strong> Wallet has ₹2,000</p>
-              <p><strong>Action:</strong> User1 and User2 submit ₹1,500 payments at the <strong>exact same millisecond</strong></p>
-              <p><strong>Expected:</strong> 1 succeeds, 1 fails → Final balance: ₹500 (never negative)</p>
+            <div className="test-cases-grid">
+              <div className="test-case-card">
+                <div className="test-case-badge success">Test Case 1</div>
+                <h4>High-Volume Valid Case</h4>
+                <div className="test-case-details">
+                  <p><strong>Initial Balance:</strong> ₹50,000</p>
+                  <p><strong>Action:</strong> 3 users submit 10 payment requests (₹500 each) at the exact same millisecond</p>
+                  <p><strong>Expected Result:</strong> All 10 succeed → Final balance: ₹45,000</p>
+                </div>
+              </div>
+              
+              <div className="test-case-card">
+                <div className="test-case-badge warning">Test Case 2</div>
+                <h4>Edge Case (Insufficient Funds)</h4>
+                <div className="test-case-details">
+                  <p><strong>Initial Balance:</strong> ₹2,000</p>
+                  <p><strong>Action:</strong> 2 users submit ₹1,500 payments at the exact same millisecond</p>
+                  <p><strong>Expected Result:</strong> 1 succeeds, 1 fails → Final balance: ₹500 (never negative)</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -304,59 +329,38 @@ function App() {
               )}
 
               <div className="actions">
-                <h3>🧪 Concurrent Payment Tests (Simulates Multiple Users)</h3>
+                <h3>🧪 Concurrent Payment Tests</h3>
                 
-                <div className="test-case">
-                  <div className="test-header">
-                    <span className="test-number">Custom</span>
-                    <span className="test-title">Custom Concurrent Test</span>
-                  </div>
-                  <p className="test-desc">Configure your own concurrent payment test</p>
-                  <div className="custom-inputs">
-                    <div className="input-group">
-                      <label>Number of Requests:</label>
-                      <input 
-                        type="number" 
-                        min="1" 
-                        max="100" 
-                        value={customRequests}
-                        onChange={(e) => setCustomRequests(parseInt(e.target.value) || 1)}
-                        className="custom-input"
-                      />
+                {processingRequests > 0 && (
+                  <div className="processing-indicator">
+                    <div className="processing-animation">
+                      <span className="loading-spinner"></span>
+                      <span className="processing-text">
+                        Processing {processingRequests} concurrent requests simultaneously...
+                      </span>
                     </div>
-                    <div className="input-group">
-                      <label>Amount per Payment (₹):</label>
-                      <input 
-                        type="number" 
-                        min="1" 
-                        step="100"
-                        value={customAmount}
-                        onChange={(e) => setCustomAmount(parseInt(e.target.value) || 1)}
-                        className="custom-input"
-                      />
+                    <div className="concurrent-requests">
+                      {Array.from({ length: processingRequests }, (_, i) => (
+                        <div key={i} className="request-dot" style={{ animationDelay: `${i * 0.1}s` }}>
+                          💳
+                        </div>
+                      ))}
                     </div>
                   </div>
-                  <button 
-                    onClick={() => simulateConcurrentPayments(customRequests, customAmount, 'custom')}
-                    disabled={loading}
-                    className="test-btn custom-test-btn"
-                  >
-                    {loading ? <><span className="loading-spinner"></span>Processing...</> : `▶ Run ${customRequests} Concurrent Payments of ₹${customAmount}`}
-                  </button>
-                </div>
-
+                )}
+                
                 <div className="test-case">
                   <div className="test-header">
                     <span className="test-number">Test 1</span>
                     <span className="test-title">High-Volume Valid Case</span>
                   </div>
-                  <p className="test-desc">User1, User2, and User3 submit 10 concurrent payments of ₹500 each from ₹50,000 balance</p>
+                  <p className="test-desc">10 concurrent payments of ₹500 each from ₹50,000 balance</p>
                   <button 
                     onClick={() => simulateConcurrentPayments(10, 500, 'valid')}
-                    disabled={loading}
+                    disabled={loadingTest !== null}
                     className="test-btn"
                   >
-                    {loading ? <><span className="loading-spinner"></span>Processing...</> : '▶ Run Test 1'}
+                    {loadingTest === 'valid' ? <><span className="loading-spinner"></span>Processing...</> : '▶ Run Test 1'}
                   </button>
                 </div>
 
@@ -365,33 +369,37 @@ function App() {
                     <span className="test-number">Test 2</span>
                     <span className="test-title">Edge Case (Insufficient Funds)</span>
                   </div>
-                  <p className="test-desc">User1 and User2 submit ₹1,500 payments simultaneously from ₹2,000 balance</p>
+                  <p className="test-desc">2 concurrent ₹1,500 payments from ₹2,000 balance</p>
                   <div className="action-row">
-                    <button onClick={() => resetBalance(2000)} className="reset-btn">
-                      1. Set Balance to ₹2,000
+                    <button onClick={() => resetBalance(2000)} className="reset-btn" disabled={loadingTest !== null}>
+                      Set Balance to ₹2,000
                     </button>
                     <button 
                       onClick={() => simulateConcurrentPayments(2, 1500, 'edge')}
-                      disabled={loading}
+                      disabled={loadingTest !== null}
                       className="test-btn"
                     >
-                      {loading ? <><span className="loading-spinner"></span>Processing...</> : '2. Run Test 2'}
+                      {loadingTest === 'edge' ? <><span className="loading-spinner"></span>Processing...</> : '▶ Run Test 2'}
                     </button>
                   </div>
                 </div>
 
-                <h3>💳 Single Payment (Individual User)</h3>
+                <div className="divider"></div>
+
+                <h3>💳 Single Payment</h3>
                 <div className="action-row">
-                  <button onClick={() => processPayment(500, 'Vendor Invoice', 'User1')}>
+                  <button onClick={() => processPayment(500, 'Vendor Invoice', 'User1')} className="single-payment-btn">
                     User1: Pay ₹500
                   </button>
-                  <button onClick={() => processPayment(1500, 'Vendor Invoice', 'User2')}>
+                  <button onClick={() => processPayment(1500, 'Vendor Invoice', 'User2')} className="single-payment-btn">
                     User2: Pay ₹1,500
                   </button>
-                  <button onClick={() => processPayment(5000, 'Vendor Invoice', 'User3')}>
+                  <button onClick={() => processPayment(5000, 'Vendor Invoice', 'User3')} className="single-payment-btn">
                     User3: Pay ₹5,000
                   </button>
                 </div>
+
+                <div className="divider"></div>
 
                 <h3>🔄 Reset Balance</h3>
                 <div className="action-row">
