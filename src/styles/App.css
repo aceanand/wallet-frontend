@@ -691,3 +691,55 @@ button:disabled {
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+/* Custom Test Inputs */
+.custom-inputs {
+  display: flex;
+  gap: 1rem;
+  margin: 1rem 0;
+  flex-wrap: wrap;
+}
+
+.input-group {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.input-group label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #555;
+}
+
+.custom-input {
+  padding: 0.75rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.custom-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.custom-input:hover {
+  border-color: #667eea;
+}
+
+.custom-test-btn {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  margin-top: 0.5rem;
+}
+
+.custom-test-btn:hover {
+  box-shadow: 0 6px 20px rgba(245, 87, 108, 0.4);
+}

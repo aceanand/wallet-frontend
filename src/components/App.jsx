@@ -8,6 +8,8 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [testResults, setTestResults] = useState(null);
   const [showScenario, setShowScenario] = useState(false);
+  const [customRequests, setCustomRequests] = useState(10);
+  const [customAmount, setCustomAmount] = useState(500);
 
   useEffect(() => {
     fetchDepartments();
@@ -303,6 +305,46 @@ function App() {
 
               <div className="actions">
                 <h3>🧪 Concurrent Payment Tests (Simulates Multiple Users)</h3>
+                
+                <div className="test-case">
+                  <div className="test-header">
+                    <span className="test-number">Custom</span>
+                    <span className="test-title">Custom Concurrent Test</span>
+                  </div>
+                  <p className="test-desc">Configure your own concurrent payment test</p>
+                  <div className="custom-inputs">
+                    <div className="input-group">
+                      <label>Number of Requests:</label>
+                      <input 
+                        type="number" 
+                        min="1" 
+                        max="100" 
+                        value={customRequests}
+                        onChange={(e) => setCustomRequests(parseInt(e.target.value) || 1)}
+                        className="custom-input"
+                      />
+                    </div>
+                    <div className="input-group">
+                      <label>Amount per Payment (₹):</label>
+                      <input 
+                        type="number" 
+                        min="1" 
+                        step="100"
+                        value={customAmount}
+                        onChange={(e) => setCustomAmount(parseInt(e.target.value) || 1)}
+                        className="custom-input"
+                      />
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => simulateConcurrentPayments(customRequests, customAmount, 'custom')}
+                    disabled={loading}
+                    className="test-btn custom-test-btn"
+                  >
+                    {loading ? <><span className="loading-spinner"></span>Processing...</> : `▶ Run ${customRequests} Concurrent Payments of ₹${customAmount}`}
+                  </button>
+                </div>
+
                 <div className="test-case">
                   <div className="test-header">
                     <span className="test-number">Test 1</span>
