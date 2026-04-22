@@ -5,7 +5,6 @@ function App() {
   const [departments, setDepartments] = useState([]);
   const [selectedDept, setSelectedDept] = useState(null);
   const [transactions, setTransactions] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [testResults, setTestResults] = useState(null);
   const [showScenario, setShowScenario] = useState(false);
   const [loadingTest, setLoadingTest] = useState(null); // Track which test is loading
